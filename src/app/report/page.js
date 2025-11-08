@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Camera, Microphone, Square, PaperPlaneRight } from "../components/PhosphorIcons";
 
 const CATEGORIES = ["Poor Lighting", "Harassment", "Suspicious Activity", "Theft"]; 
 
@@ -99,10 +100,11 @@ export default function ReportPage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-base-100">
-      <div className="px-4 pt-4 pb-8">
-        <div className="mx-auto max-w-md w-full">
-          <div className="mt-6 bg-primary/5 border border-primary/20 rounded-xl p-4">
+    <div className="w-full min-h-screen bg-base-100 pt-6 pb-24">
+      <div className="mx-auto w-full max-w-[1100px] px-4 md:px-6 lg:grid lg:grid-cols-12 lg:gap-10">
+        {/* LEFT: Form */}
+        <div className="lg:col-span-7 xl:col-span-8">
+          <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
             <p className="text-sm text-base-content/80">
               <span className="font-semibold text-base-content">Help keep everyone safe.</span> Your report helps the community stay informed.
             </p>
@@ -138,25 +140,9 @@ export default function ReportPage() {
               value={reportText}
               onChange={(e) => setReportText(e.target.value)}
               placeholder="Describe the incident in detail... When did it happen? Who was involved? Any other relevant details?"
-              className="textarea textarea-bordered w-full h-32 resize-none leading-relaxed text-base"
+              className="textarea textarea-bordered w-full h-40 resize-none leading-relaxed text-base"
             />
             <p className="text-xs text-base-content/50 mt-2">Be as specific as possible to help others</p>
-          </div>
-
-          {/* Recording */}
-          <div className="mt-6 flex items-center gap-2">
-            {!recording ? (
-              <button className="btn btn-outline" onClick={startRecording} disabled={busy}>
-                <MicIcon />
-                Record What's Happening
-              </button>
-            ) : (
-              <button className="btn btn-error" onClick={stopRecording}>
-                <StopIcon />
-                Stop ({recordSecs}s)
-              </button>
-            )}
-            {busy && <span className="loading loading-dots loading-sm" />}
           </div>
 
           {/* Upload */}
@@ -165,9 +151,9 @@ export default function ReportPage() {
               <span className="text-sm font-bold text-base-content">Evidence</span>
               <span className="text-xs text-base-content/60 ml-2">(Optional)</span>
             </div>
-            <label className="btn btn-outline w-full h-auto py-4 cursor-pointer" htmlFor="file-input">
+      <label className="btn btn-outline w-full h-auto py-4 cursor-pointer" htmlFor="file-input">
               <div className="flex items-center justify-center gap-3">
-                <CameraIcon className="h-6 w-6" />
+        <Camera className="h-6 w-6" />
                 <div className="text-left">
                   <p className="font-semibold">Upload Photo or Video</p>
                   <p className="text-xs text-base-content/60 font-normal">Helps verify the incident</p>
@@ -197,48 +183,44 @@ export default function ReportPage() {
 
           {/* Submit */}
           <button className="btn btn-primary w-full mt-8 btn-lg shadow-lg" disabled={!reportText.trim() || busy} onClick={submitReport}>
-            <SendIcon className="mr-2" /> Submit Report
+            <PaperPlaneRight className="mr-2 h-5 w-5" /> Submit Report
           </button>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-base-content/60">
-              In immediate danger? <a href="/sos" className="text-error font-bold hover:underline">Trigger Emergency SOS</a>
-            </p>
-          </div>
         </div>
+
+        {/* RIGHT: Tools */}
+        <aside className="mt-10 lg:mt-0 lg:col-span-5 xl:col-span-4 space-y-6">
+          <div className="bg-base-100 border border-base-300 rounded-xl p-4">
+            <div className="flex items-center gap-2">
+              {!recording ? (
+                <button className="btn btn-outline" onClick={startRecording} disabled={busy}>
+                  <Microphone className="h-5 w-5" />
+                  Record What's Happening
+                </button>
+              ) : (
+                <button className="btn btn-error" onClick={stopRecording}>
+                  <Square className="h-5 w-5" />
+                  Stop ({recordSecs}s)
+                </button>
+              )}
+              {busy && <span className="loading loading-dots loading-sm" />}
+            </div>
+            <p className="text-[11px] text-base-content/60 mt-3">Use your voice to quickly capture details; transcript is auto-appended.</p>
+          </div>
+          <div className="bg-error/10 border border-error/20 rounded-lg p-4 text-xs">
+            In immediate danger? <a href="/sos" className="text-error font-bold hover:underline">Trigger Emergency SOS</a>
+          </div>
+          <div className="bg-base-200 rounded-xl p-4 text-xs text-base-content/70 leading-relaxed space-y-2">
+            <p className="font-semibold text-base-content">Tips for clear reports:</p>
+            <ul className="list-disc ml-4 space-y-1">
+              <li>Time, place, and description of people involved.</li>
+              <li>What you observed vs. what you inferred.</li>
+              <li>Attach photos or short video when safe.</li>
+            </ul>
+          </div>
+        </aside>
       </div>
     </div>
   );
 }
 
-function MicIcon({ className = "" }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`h-5 w-5 ${className}`}>
-      <path d="M12 2a3 3 0 00-3 3v6a3 3 0 006 0V5a3 3 0 00-3-3zm-1 15.9V22h2v-4.1A7.002 7.002 0 0019 11h-2a5 5 0 01-10 0H5a7.002 7.002 0 006 6.9z" />
-    </svg>
-  );
-}
-
-function StopIcon({ className = "" }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`h-5 w-5 ${className}`}>
-      <path d="M6 6h12v12H6z" />
-    </svg>
-  );
-}
-
-function CameraIcon({ className = "" }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`h-5 w-5 ${className}`}>
-      <path d="M9 3l1.5 2H20a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1h3L9 3zm3 5a5 5 0 100 10 5 5 0 000-10zm0 2a3 3 0 110 6 3 3 0 010-6z" />
-    </svg>
-  );
-}
-
-function SendIcon({ className = "" }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`h-5 w-5 ${className}`}>
-      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-    </svg>
-  );
-}
+// Replaced inline icons with Phosphor components above

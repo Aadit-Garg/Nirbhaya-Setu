@@ -1,6 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import GMap from "../components/GMap";
+import { MagnifyingGlass, Siren, ChatCircle, Warning } from "../components/PhosphorIcons";
+import { useLocation } from "../components/LocationProvider";
 import { useUser } from "@auth0/nextjs-auth0";
 
 function getGreeting(date = new Date()) {
@@ -28,6 +31,7 @@ export default function DashboardPage() {
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
   const [hour, setHour] = useState(new Date().getHours());
+  const { location: userLoc } = useLocation();
 
   const greeting = useMemo(() => getGreeting(), []);
   const roles = getRoles(user);
@@ -46,10 +50,22 @@ export default function DashboardPage() {
   };
   const zoneColors = colorsForHour(hour);
 
+  // Derive circles for map heat representation (mock logic)
+  const circles = useMemo(() => {
+    const center = userLoc || { lat: 28.6139, lng: 77.2090 }; // Delhi fallback
+    // Spread 3 circles offset in lat/lng
+    return [
+      { center: { lat: center.lat + 0.010, lng: center.lng + 0.012 }, radius: 600, color: zoneColors[0], fillOpacity: 0.10 },
+      { center: { lat: center.lat - 0.006, lng: center.lng + 0.006 }, radius: 500, color: zoneColors[1], fillOpacity: 0.10 },
+      { center: { lat: center.lat + 0.004, lng: center.lng - 0.010 }, radius: 450, color: zoneColors[2], fillOpacity: 0.10 },
+    ];
+  }, [zoneColors, userLoc]);
+
   return (
     <div className="w-full">
-      <div className="px-4 pt-4">
-        <div className="mx-auto max-w-md w-full">
+      <div className="px-4 md:px-6 pt-6 mx-auto w-full max-w-[1100px] lg:grid lg:grid-cols-12 lg:gap-10">
+        {/* LEFT COLUMN */}
+        <div className="lg:col-span-7 xl:col-span-8">
           <div className="mt-6">
             <h1 className="text-xl font-semibold text-base-content/70">
               {isLoading ? "Loading…" : `${greeting}, ${user?.name || "Explorer"}`}
@@ -71,9 +87,9 @@ export default function DashboardPage() {
           </div>
 
           {/* Safety Concierge (GenAI) */}
-          <div className="mt-6">
+          <div className="mt-8">
             <label className="input input-bordered flex items-center gap-2 shadow-sm w-full bg-base-100 focus-within:ring-2 focus-within:ring-primary/20 transition-shadow">
-              <SearchIcon className="text-base-content/40" />
+              <MagnifyingGlass className="text-base-content/40 h-5 w-5" />
               <input
                 type="text"
                 value={query}
@@ -116,22 +132,20 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
-      </div>
-
-      <div className="px-4 pb-4">
-        <div className="mx-auto max-w-md w-full">
+        {/* RIGHT COLUMN */}
+        <aside className="mt-10 lg:mt-0 lg:col-span-5 xl:col-span-4 space-y-8">
           {/* Quick Actions */}
-          <div className="mt-8">
+          <div>
             <h2 className="text-lg font-bold text-base-content mb-4">Quick Actions</h2>
 
             <a href="/sos" className="btn btn-error btn-lg w-full mb-4 text-lg shadow-lg hover:shadow-xl transition-shadow">
-              <SosIcon className="mr-2 h-6 w-6" /> Emergency SOS
+              <Siren className="mr-2 h-6 w-6" /> Emergency SOS
             </a>
 
             <div className="grid grid-cols-2 gap-3">
               <a href="/community" className="bg-base-100 border border-base-300 rounded-xl p-4 hover:shadow-md hover:border-primary/30 transition-all flex flex-col items-center gap-2 text-center">
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <ChatIcon className="text-primary h-6 w-6" />
+                  <ChatCircle className="text-primary h-6 w-6" />
                 </div>
                 <div>
                   <p className="font-semibold text-sm text-base-content">Community</p>
@@ -141,7 +155,7 @@ export default function DashboardPage() {
 
               <a href="/report" className="bg-base-100 border border-base-300 rounded-xl p-4 hover:shadow-md hover:border-primary/30 transition-all flex flex-col items-center gap-2 text-center">
                 <div className="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center">
-                  <WarningIcon className="text-warning h-6 w-6" />
+                  <Warning className="text-warning h-6 w-6" />
                 </div>
                 <div>
                   <p className="font-semibold text-sm text-base-content">Report</p>
@@ -152,21 +166,25 @@ export default function DashboardPage() {
           </div>
 
           {/* Heatmap Section */}
-          <div className="mt-10">
+          <div className="mt-8">
             <div className="flex items-baseline justify-between mb-4">
               <div>
                 <h2 className="text-lg font-bold text-base-content">Safety Heatmap</h2>
                 <p className="text-sm text-base-content/60 mt-0.5">See how safety changes by time</p>
               </div>
             </div>
-
             <div className="rounded-xl overflow-hidden shadow-lg border border-base-300 bg-base-100" style={{ height: 260 }}>
-              <div className="relative w-full h-full">
-                {/* Simple circles to simulate zones */}
-                <div className="absolute rounded-full opacity-70" style={{ left: 40, top: 60, width: 160, height: 160, background: zoneColors[0] }} />
-                <div className="absolute rounded-full opacity-60" style={{ left: 140, top: 80, width: 120, height: 120, background: zoneColors[1] }} />
-                <div className="absolute rounded-full opacity-50" style={{ left: 80, top: 120, width: 100, height: 100, background: zoneColors[2] }} />
-              </div>
+              <GMap
+                zoom={13}
+                center={userLoc || { lat: 28.6139, lng: 77.2090 }}
+                markers={userLoc ? [{ position: userLoc, label: 'You' }] : []}
+                circles={circles}
+              />
+            </div>
+            <div className="mt-3 flex items-center gap-3 text-xs">
+              <LegendSwatch color={zoneColors[0]} label="Low Risk" />
+              <LegendSwatch color={zoneColors[1]} label="Moderate" />
+              <LegendSwatch color={zoneColors[2]} label="Higher" />
             </div>
 
             {/* Time Slider */}
@@ -209,49 +227,29 @@ export default function DashboardPage() {
               </a>
             )}
           </div>
-        </div>
+        </aside>
       </div>
-
       {/* Floating SOS */}
       <a
         href="/sos"
         className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-error text-error-content shadow-lg hover:shadow-xl flex items-center justify-center"
         aria-label="Emergency SOS"
       >
-        <SosIcon />
+        <Siren className="h-5 w-5" />
       </a>
     </div>
   );
 }
 
-function SearchIcon({ className = "" }) {
+// Phosphor icons used above
+
+function LegendSwatch({ color, label }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`h-5 w-5 ${className}`}>
-      <path d="M10 2a8 8 0 105.293 14.293l4.207 4.207 1.414-1.414-4.207-4.207A8 8 0 0010 2zm0 2a6 6 0 110 12A6 6 0 0110 4z" />
-    </svg>
+    <span className="inline-flex items-center gap-1">
+      <span className="h-3 w-6 rounded-sm" style={{ background: color }} />
+      <span className="text-base-content/60">{label}</span>
+    </span>
   );
 }
 
-function SosIcon({ className = "" }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`h-5 w-5 ${className}`}>
-      <path d="M12 2a1 1 0 01.894.553l8 16A1 1 0 0120 20H4a1 1 0 01-.894-1.447l8-16A1 1 0 0112 2zm0 4.618L6.618 18h10.764L12 6.618zM11 10h2v4h-2v-4zm0 6h2v2h-2v-2z" />
-    </svg>
-  );
-}
-
-function ChatIcon({ className = "" }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`h-5 w-5 ${className}`}>
-      <path d="M4 3h16a1 1 0 011 1v11a1 1 0 01-1 1H8.414L4.707 19.707A1 1 0 013 19V4a1 1 0 011-1zm1 2v11.586L7.586 14H19V5H5z" />
-    </svg>
-  );
-}
-
-function WarningIcon({ className = "" }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={`h-5 w-5 ${className}`}>
-      <path d="M12 4l9 16H3l9-16zm0 3.618L6.618 18h10.764L12 7.618zM11 10h2v4h-2v-4zm0 6h2v2h-2v-2z" />
-    </svg>
-  );
-}
+// end
