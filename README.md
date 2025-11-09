@@ -2,7 +2,7 @@ Nirbhaya Setu
 
 Empowering Women, Securing Our Communities
 
-A next-generation safety platform integrating artificial intelligence, IoT sensors, and community feedback to provide real-time protection and genuine peace of mind in public spaces. Built by Dead Poets' Farmers to transform how cities approach women's safety through technology and trust.
+A next-generation safety platform integrating artificial intelligence, IoT sensors, and community feedback to provide real-time protection and genuine peace of mind in public spaces. Built by Team Aura Farmers to transform how cities approach women's safety through technology and trust.
 
 The Data: A Crisis of Safety
 
@@ -152,4 +152,4 @@ Our Vision: "Every woman can move anywhere, anytime, without fear."
 
 Nirbhaya Setu represents a real-time women safety ecosystem powered by artificial intelligence, IoT connectivity, and community trust. By transforming public spaces into secure environments and empowering women with technology and information, we create communities where safety is not a luxury but a fundamental right.
 
-Team Dead Poets'
+Team Aura Farmers
